@@ -5,10 +5,20 @@ from pgbackup import pgdump
 
 url = "postgres://bob:password@example.com:5432/db_one"
 
-def test_dump_calls_pg_dumps(mocker):
+def test_dump_calls_pg_dump(mocker):
     """
     Utilize the pg_dump with database URL
     """
     mocker.patch('subprocess.Popen')
     assert pgdump.dump(url)
-    subprocess.Popen.assert_called_with(['pg_dump', url], stdput=subprocess.PIPE)
+    subprocess.Popen.assert_called_with(['pg_dump', url], stdout=subprocess.PIPE)
+
+
+def test_dump_handles_oserror(mocker):
+    """
+    pgdump.dump returns a error if pg_dump isn't installed
+    """
+    #config =
+    mocker.patch('subprocess.Popen', side_effect=OSError('file not found!!'))
+    with pytest.raises(SystemExit):
+        pgdump.dump(url)
